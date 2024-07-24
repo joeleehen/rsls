@@ -21,9 +21,9 @@ use libc::{S_IRGRP, S_IROTH, S_IRUSR, S_IWGRP, S_IWOTH, S_IWUSR, S_IXGRP, S_IXOT
 use std::os::unix::fs::PermissionsExt;
 
 fn parse_permissions(mode: u32) -> String {
-    let user = triplet(mode, S_IRUSR, S_IWUSR, S_IXUSR);
-    let group = triplet(mode, S_IRGRP, S_IWGRP, S_IXGRP);
-    let other = triplet(mode, S_IROTH, S_IWOTH, S_IXOTH);
+    let user = triplet(mode, S_IRUSR as u32, S_IWUSR as u32, S_IXUSR as u32);
+    let group = triplet(mode, S_IRGRP as u32, S_IWGRP as u32, S_IXGRP as u32);
+    let other = triplet(mode, S_IROTH as u32, S_IWOTH as u32, S_IXOTH as u32);
     [user, group, other].join("")
 }
 
@@ -109,9 +109,9 @@ fn run_long(include_hidden: bool, dir: &PathBuf) -> Result<(), Box<dyn Error>> {
                     println!(
                         "{} {:>5} {} {}",
                         if entry.metadata()?.is_dir() {
-                            "d".to_string() + &parse_permissions(mode)
+                            "d".to_string() + &parse_permissions(mode as u32)
                         } else {
-                            "-".to_string() + &parse_permissions(mode)
+                            "-".to_string() + &parse_permissions(mode as u32)
                         },
                         format_size(size, DECIMAL),
                         modified.format("%_d %b %H:%M").to_string(),
@@ -123,9 +123,9 @@ fn run_long(include_hidden: bool, dir: &PathBuf) -> Result<(), Box<dyn Error>> {
                 println!(
                     "{} {:>5} {} {}",
                     if entry.metadata()?.is_dir() {
-                        "d".to_string() + &parse_permissions(mode)
+                        "d".to_string() + &parse_permissions(mode as u32)
                     } else {
-                        "-".to_string() + &parse_permissions(mode)
+                        "-".to_string() + &parse_permissions(mode as u32)
                     },
                     format_size(size, DECIMAL),
                     modified.format("%_d %b %H:%M").to_string(),
