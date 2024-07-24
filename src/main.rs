@@ -42,23 +42,23 @@ fn triplet(mode: u32, read: u32, write: u32, execute: u32) -> String {
 }
 
 fn main() {
+    let mut include_hidden = false;
     let args: RsArgs = RsArgs::parse();
 
     //  debugging moment
     // println!("{}", &args.dir.display());
+
+    if args.all {
+        include_hidden = true;
+    }
 
     if args.long {
         if let Err(ref e) = run_long(&args.dir) {
             println!("{}", e);
             process::exit(1);
         }
-    } else if args.all {
-        if let Err(ref e) = run_all(&args.dir) {
-            println!("{}", e);
-            process::exit(1);
-        }
     } else {
-        if let Err(ref e) = run(&args.dir) {
+        if let Err(ref e) = run(include_hidden, &args.dir) {
             println!("{}", e);
             process::exit(1);
         }
@@ -68,7 +68,7 @@ fn main() {
 // TODO: We might wanna push each file_name to a mut vec for
 // alphabetization and formatting
 
-fn run(dir: &PathBuf) -> Result<(), Box<dyn Error>> {
+fn run(include_hidden: bool, dir: &PathBuf) -> Result<(), Box<dyn Error>> {
     if dir.is_dir() {
         for entry in fs::read_dir(dir)? {
             let entry = entry?;
@@ -76,8 +76,13 @@ fn run(dir: &PathBuf) -> Result<(), Box<dyn Error>> {
                 .file_name()
                 .into_string()
                 .or_else(|f| Err(format!("Invalid entry: {:?}", f)))?;
-            // skip hidden files
-            if file_name.chars().nth(0) != Some('.') {
+            if include_hidden == false {
+                // skip hidden files
+                if file_name.chars().nth(0) != Some('.') {
+                    println!("{}", file_name);
+                }
+            } else {
+                // include hidden files
                 println!("{}", file_name);
             }
         }
