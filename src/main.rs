@@ -20,14 +20,14 @@ use humansize::{format_size, DECIMAL};
 use libc::{S_IRGRP, S_IROTH, S_IRUSR, S_IWGRP, S_IWOTH, S_IWUSR, S_IXGRP, S_IXOTH, S_IXUSR};
 use std::os::unix::fs::PermissionsExt;
 
-fn parse_permissions(mode: u16) -> String {
+fn parse_permissions(mode: u32) -> String {
     let user = triplet(mode, S_IRUSR, S_IWUSR, S_IXUSR);
     let group = triplet(mode, S_IRGRP, S_IWGRP, S_IXGRP);
     let other = triplet(mode, S_IROTH, S_IWOTH, S_IXOTH);
     [user, group, other].join("")
 }
 
-fn triplet(mode: u16, read: u16, write: u16, execute: u16) -> String {
+fn triplet(mode: u32, read: u32, write: u32, execute: u32) -> String {
     match (mode & read, mode & write, mode & execute) {
         (0, 0, 0) => "---",
         (_, 0, 0) => "r--",
@@ -90,7 +90,7 @@ fn run_long(dir: &PathBuf) -> Result<(), Box<dyn Error>> {
             //println!("{}", file_name);
             println!(
                 "{} {:>5} {} {}",
-                parse_permissions(mode as u16),
+                parse_permissions(mode),
                 format_size(size, DECIMAL),
                 modified.format("%_d %b %H:%M").to_string(),
                 file_name
