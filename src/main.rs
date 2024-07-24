@@ -53,7 +53,7 @@ fn main() {
     }
 
     if args.long {
-        if let Err(ref e) = run_long(&args.dir) {
+        if let Err(ref e) = run_long(include_hidden, &args.dir) {
             println!("{}", e);
             process::exit(1);
         }
@@ -90,22 +90,7 @@ fn run(include_hidden: bool, dir: &PathBuf) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-
-fn run_all(dir: &PathBuf) -> Result<(), Box<dyn Error>> {
-    if dir.is_dir() {
-        for entry in fs::read_dir(dir)? {
-            let entry = entry?;
-            let file_name = entry
-                .file_name()
-                .into_string()
-                .or_else(|f| Err(format!("Invalid entry: {:?}", f)))?;
-            println!("{}", file_name);
-        }
-    }
-    Ok(())
-}
-
-fn run_long(dir: &PathBuf) -> Result<(), Box<dyn Error>> {
+fn run_long(include_hidden: bool, dir: &PathBuf) -> Result<(), Box<dyn Error>> {
     if dir.is_dir() {
         for entry in fs::read_dir(dir)? {
             let entry = entry?;
@@ -118,14 +103,27 @@ fn run_long(dir: &PathBuf) -> Result<(), Box<dyn Error>> {
             let modified: DateTime<Local> = DateTime::from(metadata.modified()?);
             let mode = metadata.permissions().mode();
 
-            //println!("{}", file_name);
-            println!(
-                "{} {:>5} {} {}",
-                parse_permissions(mode),
-                format_size(size, DECIMAL),
-                modified.format("%_d %b %H:%M").to_string(),
-                file_name
-            );
+            if include_hidden == false {
+                // skip hidden files
+                if file_name.chars().nth(0) != Some('.') {
+                    println!(
+                        "{} {:>5} {} {}",
+                        parse_permissions(mode),
+                        format_size(size, DECIMAL),
+                        modified.format("%_d %b %H:%M").to_string(),
+                        file_name
+                        );
+                }
+            } else {
+                // include hidden files
+                println!(
+                    "{} {:>5} {} {}",
+                    parse_permissions(mode),
+                    format_size(size, DECIMAL),
+                    modified.format("%_d %b %H:%M").to_string(),
+                    file_name
+                );
+            }
         }
     }
     Ok(())
