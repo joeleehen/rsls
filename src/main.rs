@@ -45,10 +45,15 @@ fn main() {
     let args: RsArgs = RsArgs::parse();
 
     //  debugging moment
-    println!("{}", &args.dir.display());
+    // println!("{}", &args.dir.display());
 
     if args.long {
         if let Err(ref e) = run_long(&args.dir) {
+            println!("{}", e);
+            process::exit(1);
+        }
+    } else if args.all {
+        if let Err(ref e) = run_all(&args.dir) {
             println!("{}", e);
             process::exit(1);
         }
@@ -60,7 +65,28 @@ fn main() {
     }
 }
 
+// TODO: We might wanna push each file_name to a mut vec for
+// alphabetization and formatting
+
 fn run(dir: &PathBuf) -> Result<(), Box<dyn Error>> {
+    if dir.is_dir() {
+        for entry in fs::read_dir(dir)? {
+            let entry = entry?;
+            let file_name = entry
+                .file_name()
+                .into_string()
+                .or_else(|f| Err(format!("Invalid entry: {:?}", f)))?;
+            // skip hidden files
+            if file_name.chars().nth(0) != Some('.') {
+                println!("{}", file_name);
+            }
+        }
+    }
+    Ok(())
+}
+
+
+fn run_all(dir: &PathBuf) -> Result<(), Box<dyn Error>> {
     if dir.is_dir() {
         for entry in fs::read_dir(dir)? {
             let entry = entry?;
