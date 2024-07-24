@@ -108,7 +108,11 @@ fn run_long(include_hidden: bool, dir: &PathBuf) -> Result<(), Box<dyn Error>> {
                 if file_name.chars().nth(0) != Some('.') {
                     println!(
                         "{} {:>5} {} {}",
-                        parse_permissions(mode),
+                        if entry.metadata()?.is_dir() {
+                            "d".to_string() + &parse_permissions(mode)
+                        } else {
+                            "-".to_string() + &parse_permissions(mode)
+                        },
                         format_size(size, DECIMAL),
                         modified.format("%_d %b %H:%M").to_string(),
                         file_name
@@ -118,7 +122,11 @@ fn run_long(include_hidden: bool, dir: &PathBuf) -> Result<(), Box<dyn Error>> {
                 // include hidden files
                 println!(
                     "{} {:>5} {} {}",
-                    parse_permissions(mode),
+                    if entry.metadata()?.is_dir() {
+                        "d".to_string() + &parse_permissions(mode)
+                    } else {
+                        "-".to_string() + &parse_permissions(mode)
+                    },
                     format_size(size, DECIMAL),
                     modified.format("%_d %b %H:%M").to_string(),
                     file_name
