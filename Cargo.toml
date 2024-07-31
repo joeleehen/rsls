@@ -9,3 +9,4 @@ clap = { version = "4.5.9", features = ["derive"] }
 humansize = "2.1.3"
 libc = "0.2.155"
 structopt = "0.3.26"
+termsize = "0.1.9"

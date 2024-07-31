@@ -6,6 +6,7 @@ extern crate chrono;
 extern crate clap;
 extern crate humansize;
 extern crate libc;
+extern crate termsize;
 #[macro_use]
 use std::fs;
 use std::error::Error;
@@ -47,6 +48,8 @@ fn main() {
 
     //  debugging moment
     // println!("{}", &args.dir.display());
+    let termcols = termsize::get().unwrap().cols;
+    println!("{}", termcols);
 
     if args.all {
         include_hidden = true;
