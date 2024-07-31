@@ -7,7 +7,6 @@ extern crate clap;
 extern crate humansize;
 extern crate libc;
 extern crate termsize;
-#[macro_use]
 use std::fs;
 use std::error::Error;
 use std::path::PathBuf;
@@ -44,15 +43,20 @@ fn triplet(mode: u32, read: u32, write: u32, execute: u32) -> String {
 
 fn main() {
     let mut include_hidden = false;
+    let mut force_columns = false;
     let args: RsArgs = RsArgs::parse();
 
     //  debugging moment
     // println!("{}", &args.dir.display());
     let termcols = termsize::get().unwrap().cols;
-    println!("{}", termcols);
 
     if args.all {
         include_hidden = true;
+    }
+
+    if args.force_col {
+        println!("we'll force to one column output");
+        force_columns = true;
     }
 
     if args.long {
@@ -61,7 +65,7 @@ fn main() {
             process::exit(1);
         }
     } else {
-        if let Err(ref e) = run(include_hidden, &args.dir) {
+        if let Err(ref e) = run(include_hidden, force_columns, &args.dir) {
             println!("{}", e);
             process::exit(1);
         }
@@ -70,9 +74,22 @@ fn main() {
 
 // TODO: We might wanna push each file_name to a mut vec for
 // alphabetization and formatting
+fn output_to_term(mut files: Vec<String>, force_col: bool) {
+    files.sort();
+    if force_col {
+        println!("forcing output to one column");
+    }
 
-fn run(include_hidden: bool, dir: &PathBuf) -> Result<(), Box<dyn Error>> {
+    for entry in files {
+        println!("{entry}");
+    }
+}
+
+fn run(include_hidden: bool, force_col: bool, dir: &PathBuf) -> Result<(), Box<dyn Error>> {
+    //let mut files = Vec::new();
     if dir.is_dir() {
+        let mut files = Vec::new();
+
         for entry in fs::read_dir(dir)? {
             let entry = entry?;
             let file_name = entry
@@ -82,13 +99,16 @@ fn run(include_hidden: bool, dir: &PathBuf) -> Result<(), Box<dyn Error>> {
             if include_hidden == false {
                 // skip hidden files
                 if file_name.chars().nth(0) != Some('.') {
-                    println!("{}", file_name);
+                    // println!("{}", file_name);
+                    files.push(file_name);
                 }
             } else {
                 // include hidden files
-                println!("{}", file_name);
+                // println!("{}", file_name);
+                files.push(file_name);
             }
         }
+        output_to_term(files, force_col);
     }
     Ok(())
 }
