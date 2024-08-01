@@ -11,6 +11,7 @@ use std::fs;
 use std::error::Error;
 use std::path::PathBuf;
 use std::process;
+use std::cmp;
 
 use clap::Parser;
 
@@ -48,14 +49,12 @@ fn main() {
 
     //  debugging moment
     // println!("{}", &args.dir.display());
-    let termcols = termsize::get().unwrap().cols;
 
     if args.all {
         include_hidden = true;
     }
 
     if args.force_col {
-        println!("we'll force to one column output");
         force_columns = true;
     }
 
@@ -74,14 +73,22 @@ fn main() {
 
 // TODO: We might wanna push each file_name to a mut vec for
 // alphabetization and formatting
-fn output_to_term(mut files: Vec<String>, force_col: bool) {
+fn output_to_term(mut files: Vec<String>, force_col: bool, longest_file_name: usize) {
     files.sort();
-    if force_col {
-        println!("forcing output to one column");
-    }
+    let ncol = termsize::get().unwrap().cols / longest_file_name as u16;
 
+    let mut n = 0;
     for entry in files {
-        println!("{entry}");
+        if force_col {
+            println!("{entry}");
+        } else {
+            print!("{entry}    ");
+            n += 1;
+            if n >= ncol {
+                println!("");
+                n = 0;
+            }
+        }
     }
 }
 
@@ -89,6 +96,7 @@ fn run(include_hidden: bool, force_col: bool, dir: &PathBuf) -> Result<(), Box<d
     //let mut files = Vec::new();
     if dir.is_dir() {
         let mut files = Vec::new();
+        let mut longest_file_name = 0;
 
         for entry in fs::read_dir(dir)? {
             let entry = entry?;
@@ -96,19 +104,21 @@ fn run(include_hidden: bool, force_col: bool, dir: &PathBuf) -> Result<(), Box<d
                 .file_name()
                 .into_string()
                 .or_else(|f| Err(format!("Invalid entry: {:?}", f)))?;
-            if include_hidden == false {
+            if !include_hidden {
                 // skip hidden files
                 if file_name.chars().nth(0) != Some('.') {
                     // println!("{}", file_name);
+                    longest_file_name = cmp::max(longest_file_name as usize, file_name.chars().count());
                     files.push(file_name);
                 }
             } else {
                 // include hidden files
                 // println!("{}", file_name);
+                longest_file_name = cmp::max(longest_file_name as usize, file_name.len());
                 files.push(file_name);
             }
         }
-        output_to_term(files, force_col);
+        output_to_term(files, force_col, longest_file_name);
     }
     Ok(())
 }
