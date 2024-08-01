@@ -7,11 +7,11 @@ extern crate clap;
 extern crate humansize;
 extern crate libc;
 extern crate termsize;
-use std::fs;
+use std::cmp;
 use std::error::Error;
+use std::fs;
 use std::path::PathBuf;
 use std::process;
-use std::cmp;
 
 use clap::Parser;
 
@@ -76,7 +76,7 @@ fn main() {
 }
 
 fn append_icon(file_name: String) -> String {
-    // check if directory 
+    // check if directory
     let split_name = &file_name.split('/').collect::<Vec<&str>>();
     if split_name.len() == 2 {
         //println!("{BLUE} {file_name}{RESET}");
@@ -137,7 +137,8 @@ fn run(include_hidden: bool, force_col: bool, dir: &PathBuf) -> Result<(), Box<d
                 // skip hidden files
                 if file_name.chars().nth(0) != Some('.') {
                     // println!("{}", file_name);
-                    longest_file_name = cmp::max(longest_file_name as usize, file_name.chars().count());
+                    longest_file_name =
+                        cmp::max(longest_file_name as usize, file_name.chars().count());
                     files.push(file_name);
                 }
             } else {
@@ -148,6 +149,7 @@ fn run(include_hidden: bool, force_col: bool, dir: &PathBuf) -> Result<(), Box<d
             }
         }
         output_to_term(files, force_col, longest_file_name);
+        println!("");
     }
     Ok(())
 }
@@ -178,7 +180,7 @@ fn run_long(include_hidden: bool, dir: &PathBuf) -> Result<(), Box<dyn Error>> {
                         format_size(size, DECIMAL),
                         modified.format("%_d %b %H:%M").to_string(),
                         file_name
-                        );
+                    );
                 }
             } else {
                 // include hidden files
