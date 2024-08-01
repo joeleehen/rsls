@@ -21,6 +21,13 @@ use humansize::{format_size, DECIMAL};
 use libc::{S_IRGRP, S_IROTH, S_IRUSR, S_IWGRP, S_IWOTH, S_IWUSR, S_IXGRP, S_IXOTH, S_IXUSR};
 use std::os::unix::fs::PermissionsExt;
 
+const RESET: &str = "\x1b[0m";
+const GREEN: &str = "\x1b[32m";
+const RED: &str = "\x1b[31m";
+const YELLOW: &str = "\x1b[33m";
+const BLUE: &str = "\x1b[34m";
+const MAGENTA: &str = "\x1b[35m";
+
 fn parse_permissions(mode: u32) -> String {
     let user = triplet(mode, S_IRUSR as u32, S_IWUSR as u32, S_IXUSR as u32);
     let group = triplet(mode, S_IRGRP as u32, S_IWGRP as u32, S_IXGRP as u32);
@@ -47,9 +54,6 @@ fn main() {
     let mut force_columns = false;
     let args: RsArgs = RsArgs::parse();
 
-    //  debugging moment
-    // println!("{}", &args.dir.display());
-
     if args.all {
         include_hidden = true;
     }
@@ -69,6 +73,11 @@ fn main() {
             process::exit(1);
         }
     }
+}
+
+fn append_icon(file_name: String) -> String {
+    // check if directory 
+
 }
 
 // TODO: We might wanna push each file_name to a mut vec for
@@ -100,10 +109,13 @@ fn run(include_hidden: bool, force_col: bool, dir: &PathBuf) -> Result<(), Box<d
 
         for entry in fs::read_dir(dir)? {
             let entry = entry?;
-            let file_name = entry
+            let mut file_name = entry
                 .file_name()
                 .into_string()
                 .or_else(|f| Err(format!("Invalid entry: {:?}", f)))?;
+            if entry.metadata()?.is_dir() {
+                file_name = file_name + "/";
+            }
             if !include_hidden {
                 // skip hidden files
                 if file_name.chars().nth(0) != Some('.') {
