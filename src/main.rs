@@ -77,11 +77,17 @@ fn main() {
 
 fn append_icon(file_name: String) -> String {
     // check if directory 
-
+    let split_name = &file_name.split('/').collect::<Vec<&str>>();
+    if split_name.len() == 2 {
+        //println!("{BLUE} {file_name}{RESET}");
+        let result = String::from("{BLUE} {file_name}{RESET}");
+        println!("{result}");
+        result
+    } else {
+        file_name
+    }
 }
 
-// TODO: We might wanna push each file_name to a mut vec for
-// alphabetization and formatting
 fn output_to_term(mut files: Vec<String>, force_col: bool, longest_file_name: usize) {
     files.sort();
     let ncol = termsize::get().unwrap().cols / longest_file_name as u16;
@@ -89,9 +95,20 @@ fn output_to_term(mut files: Vec<String>, force_col: bool, longest_file_name: us
     let mut n = 0;
     for entry in files {
         if force_col {
-            println!("{entry}");
+            let mut split_name = &entry.split('/').collect::<Vec<&str>>();
+            if split_name.len() == 2 && split_name[1] == "" {
+                println!("{BLUE} {entry}{RESET}");
+            } else {
+                println!("{entry}");
+            }
         } else {
-            print!("{entry}    ");
+            let mut split_name = &entry.split('/').collect::<Vec<&str>>();
+            if split_name.len() == 2 && split_name[1] == "" {
+                print!("{BLUE} {entry}    {RESET}")
+            } else {
+                print!("{entry}    ");
+            }
+            //print!("{entry}    ");
             n += 1;
             if n >= ncol {
                 println!("");
