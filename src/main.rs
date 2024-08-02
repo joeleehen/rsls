@@ -1,3 +1,4 @@
+// FIXME: my newlines are fucked up now after formatting changes for some reason
 mod args;
 
 use args::RsArgs;
@@ -75,6 +76,7 @@ fn main() {
     }
 }
 
+// TODO: I don't think I need this
 fn append_icon(file_name: String) -> String {
     // check if directory
     let split_name = &file_name.split('/').collect::<Vec<&str>>();
@@ -90,28 +92,31 @@ fn append_icon(file_name: String) -> String {
 
 fn output_to_term(mut files: Vec<String>, force_col: bool, longest_file_name: usize) {
     files.sort();
-    let ncol = termsize::get().unwrap().cols / longest_file_name as u16;
+    let ncol = termsize::get().unwrap().cols / (longest_file_name as u16 + 4);
 
     let mut n = 0;
     for entry in files {
         if force_col {
-            let mut split_name = &entry.split('/').collect::<Vec<&str>>();
+            let split_name = &entry.split('/').collect::<Vec<&str>>();
             if split_name.len() == 2 && split_name[1] == "" {
                 println!("{BLUE} {entry}{RESET}");
             } else {
                 println!("{entry}");
             }
         } else {
-            let mut split_name = &entry.split('/').collect::<Vec<&str>>();
+            let padding = " ".repeat(4 + longest_file_name - entry.len());
+            let split_name = &entry.split('/').collect::<Vec<&str>>();
             if split_name.len() == 2 && split_name[1] == "" {
-                print!("{BLUE} {entry}    {RESET}")
+                print!("{BLUE} {entry}{RESET}");
+                print!("{padding}");
             } else {
-                print!("{entry}    ");
+                print!("{entry}{RESET}");
+                print!("{padding}");
             }
             //print!("{entry}    ");
             n += 1;
             if n >= ncol {
-                println!("");
+                print!("{}", '\n');
                 n = 0;
             }
         }
