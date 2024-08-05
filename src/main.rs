@@ -23,7 +23,6 @@ use std::os::unix::fs::PermissionsExt;
 use std::collections::HashMap;
 
 const RESET: &str = "\x1b[0m";
-const GREEN: &str = "\x1b[32m";
 const RED: &str = "\x1b[31m";
 const YELLOW: &str = "\x1b[33m";
 const BLUE: &str = "\x1b[34m";
@@ -34,8 +33,6 @@ const ORANGE: &str = "\x1b[38;5;208m";
 const PURPLE: &str = "\x1b[35m";
 const GRAY: &str = "\x1b[37m";
 const LIGHTRED: &str = "\x1b[91m";
-const LIGHTGREEN: &str = "\x1b[92m";
-const LIGHTYELLOW: &str = "\x1b[93m";
 const LIGHTBLUE: &str = "\x1b[94m";
 const LIGHTPURPLE: &str = "\x1b[95m";
 const LIGHTCYAN: &str = "\x1b[38;5;87m";
@@ -96,20 +93,6 @@ fn main() {
             println!("{}", e);
             process::exit(1);
         }
-    }
-}
-
-// TODO: I don't think I need this
-fn append_icon(file_name: String) -> String {
-    // check if directory
-    let split_name = &file_name.split('/').collect::<Vec<&str>>();
-    if split_name.len() == 2 {
-        //println!("{BLUE} {file_name}{RESET}");
-        let result = String::from("{BLUE} {file_name}{RESET}");
-        println!("{result}");
-        result
-    } else {
-        file_name
     }
 }
 
@@ -194,8 +177,6 @@ fn create_icon_hashmap() -> HashMap<String, &'static str> {
 fn output_to_term(mut files: Vec<String>, force_col: bool, longest_file_name: usize, file_icons: HashMap<String, &str>) {
     files.sort();
     let ncol = termsize::get().unwrap().cols / (4 + longest_file_name as u16);
-    let nrow = files.len() as u16 / ncol;
-    let total_files = files.len();
 
     let mut n = 0;
     for entry in files {
@@ -203,21 +184,32 @@ fn output_to_term(mut files: Vec<String>, force_col: bool, longest_file_name: us
 
         // printing directories
         if split_name.len() == 2 && split_name[1] == "" {
-            print!("{BLUE} {entry}{RESET}");
+            print!("{BLUE}{entry} {RESET}");
 
         // printing files
         } else {
             // TODO: if icon isn't found append two empty space
             let split_name = &entry.split('.').collect::<Vec<&str>>();
-            if split_name.len() != 2 {
-                print!("{entry}  ");
+            if split_name.len() < 2 || split_name[0] == "" {
+                // handle hidden files/ files that don't have an extension
+                print!("{entry}");
+                if force_col {
+                    println!("");
+                } else {
+                    n += 1;
+                    if n as u16 >= ncol || entry.len() > longest_file_name {
+                        println!();
+                        n = 0;
+                    } else {
+                        let padding = " ".repeat(6 + longest_file_name - entry.len());
+                        print!("{padding}");
+                    }
+                }
+                continue;
             }
 
             let extension = split_name[1];
-            //if file_icons.contains_key(&extension) {
-            //    let icon = file_icons.get(&extension);
-            //    print!("{icon}");
-            //}
+
             let icon = file_icons.get(extension);
             if icon.is_some() {
                 let icon = icon.unwrap().to_string();
@@ -240,7 +232,7 @@ fn output_to_term(mut files: Vec<String>, force_col: bool, longest_file_name: us
                     "jar"|"java" => print!("{ORANGE}{icon}{RESET}"),
                     "js" => print!("{YELLOW}{icon}{RESET}"),
                     "json"|"tiff" => print!("{BRIGHTYELLOW}{icon}{RESET}"),
-                    ".y" => print!("{DARKYELLOW}{icon}{RESET}"),
+                    "py" => print!("{DARKYELLOW}{icon}{RESET}"),
                     "rs" => print!("{DARKGRAY}{icon}{RESET}"),
                     "yml"|"yaml" => print!("{BRIGHTRED}{icon}{RESET}"),
                     "toml" => print!("{DARKORANGE}{icon}{RESET}"),
@@ -262,11 +254,13 @@ fn output_to_term(mut files: Vec<String>, force_col: bool, longest_file_name: us
                     "conf"|"bat" => print!("{DARKGRAY}{icon}{RESET}"),
                     "iso" => print!("{GRAY}{icon}{RESET}"),
                     "exe" => print!("{BRIGHTCYAN}{icon}{RESET}"),
+                    "log" => print!("{GRAY}{icon}{RESET}"),
                     _ => print!("")
                 }
-                print!("{entry}");
+            } else {
+                print!("  ");
             }
-            print!("{entry}  ");
+            print!("{entry}");
         }
         if force_col {
             println!();
