@@ -15,4 +15,8 @@ pub struct RsArgs {
     #[arg(short)]
     /// Include hidden files
     pub all: bool,
+
+    #[arg(short = 'C')]
+    /// List entries by columns
+    pub force_col: bool,
 }
