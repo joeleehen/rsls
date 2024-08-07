@@ -1,3 +1,4 @@
+// TODO: add .R, .csv, .zip, .docx, .ipynb
 mod args;
 
 use args::RsArgs;
@@ -188,7 +189,6 @@ fn output_to_term(mut files: Vec<String>, force_col: bool, longest_file_name: us
 
         // printing files
         } else {
-            // TODO: if icon isn't found append two empty space
             let split_name = &entry.split('.').collect::<Vec<&str>>();
             if split_name.len() < 2 || split_name[0] == "" {
                 // handle hidden files/ files that don't have an extension
@@ -208,8 +208,11 @@ fn output_to_term(mut files: Vec<String>, force_col: bool, longest_file_name: us
                 continue;
             }
 
-            let extension = split_name[1];
+            //let extension = split_name.reverse()[0];
+            split_name.reverse();
+            let extension = split_name[0];
 
+            let mut skipped = false;
             let icon = file_icons.get(extension);
             if icon.is_some() {
                 let icon = icon.unwrap().to_string();
@@ -255,12 +258,15 @@ fn output_to_term(mut files: Vec<String>, force_col: bool, longest_file_name: us
                     "iso" => print!("{GRAY}{icon}{RESET}"),
                     "exe" => print!("{BRIGHTCYAN}{icon}{RESET}"),
                     "log" => print!("{GRAY}{icon}{RESET}"),
-                    _ => print!("")
+                    _ => skipped = true
                 }
             } else {
                 print!("  ");
             }
             print!("{entry}");
+            if skipped {
+                print!("  ");
+            }
         }
         if force_col {
             println!();
