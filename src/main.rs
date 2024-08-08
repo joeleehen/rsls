@@ -1,4 +1,3 @@
-// TODO: add .R, .csv, .zip, .docx, .ipynb
 mod args;
 
 use args::RsArgs;
@@ -48,6 +47,7 @@ const BRIGHTYELLOW: &str = "\x1b[38;5;226m";
 const BRIGHTBLUE: &str = "\x1b[38;5;39m";
 const BRIGHTMAGENTA: &str = "\x1b[38;5;198m";
 const BRIGHTCYAN: &str = "\x1b[38;5;51m";
+const LIGHTGREEN: &str = "\x1b[92m";
 
 fn parse_permissions(mode: u32) -> String {
     let user = triplet(mode, S_IRUSR as u32, S_IWUSR as u32, S_IXUSR as u32);
@@ -171,6 +171,13 @@ fn create_icon_hashmap() -> HashMap<String, &'static str> {
     file_icons.insert("log".to_string(), " ");
     file_icons.insert("sql".to_string(), " ");
     file_icons.insert("db".to_string(), " ");
+    file_icons.insert("csv".to_string(), "󰸦 ");
+    file_icons.insert("R".to_string(), " ");
+    file_icons.insert("doc".to_string(), "󰧮 ");
+    file_icons.insert("docx".to_string(), "󰧮 ");
+    file_icons.insert("ipynb".to_string(), " ");
+    file_icons.insert("xls".to_string(), "󰱾 ");
+    file_icons.insert("xlsx".to_string(), "󰱾 ");
 
     file_icons
 }
@@ -267,6 +274,11 @@ fn output_to_term(
                     "iso" => print!("{GRAY}{icon}{RESET}"),
                     "exe" => print!("{BRIGHTCYAN}{icon}{RESET}"),
                     "log" => print!("{GRAY}{icon}{RESET}"),
+                    "csv" => print!("{CYAN}{icon}{RESET}"),
+                    "R" => print!("{BLUE}{icon}{RESET}"),
+                    "doc" | "docx" => print!("{LIGHTCYAN}{icon}{RESET}"),
+                    "ipynb" => print!("{YELLOW}{icon}{RESET}"),
+                    "xls" | "xlsx" => print!("{LIGHTGREEN}{icon}{RESET}"),
                     _ => skipped = true,
                 }
             } else {
