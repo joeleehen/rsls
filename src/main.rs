@@ -270,7 +270,8 @@ fn output_to_term(
                     _ => skipped = true,
                 }
             } else {
-                print!("  ");
+                //print!("  ");
+                skipped = true;
             }
             print!("{entry}");
             if skipped {
