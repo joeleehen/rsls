@@ -4,9 +4,10 @@ rsls is a command line tool for UNIX systems that (almost) mirrors `ls` function
 ## Installation
 
 ### Dependencies
-You need git to clone this repo. Since you're reading this, I'll assume you already have git installed.
+- You need git to clone this repo. Since you're reading this, I'll assume you already have git installed.
 
-rsls is compiled using Rust's package manager, cargo. Information about installing/building from source can be found [here](https://doc.rust-lang.org/cargo/).
+- Rust package manager, [cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html). Information about installing/building from source can be found [here](https://doc.rust-lang.org/cargo/).
+- [Nerd Font](https://www.nerdfonts.com/font-downloads) icons are used to print file icons to the terminal.
 ### Cloning the repo
 ```
 git clone https://github.com/joeleehen/rsls
@@ -21,6 +22,8 @@ alias rsls=$HOME/rsls/target/release/rsls
 ```
 
 ## Usage
+### Note: You must use a Nerd Font in your terminal to properly display the icons!
+
 Using `rsls` will feel familiar to UNIX users.
 ```
 rsls
