@@ -1,4 +1,6 @@
 # Rust ls-like tool (rsls)
+
+![image](https://i.imgur.com/PWZcz1q.gif)
 rsls is a command line tool for UNIX systems that (almost) mirrors `ls` functionality. I've written it in Rust, so it should be performant enough for daily use.
 
 ## Installation
