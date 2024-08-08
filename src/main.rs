@@ -20,8 +20,8 @@ use chrono::{DateTime, Local};
 use humansize::{format_size, DECIMAL};
 
 use libc::{S_IRGRP, S_IROTH, S_IRUSR, S_IWGRP, S_IWOTH, S_IWUSR, S_IXGRP, S_IXOTH, S_IXUSR};
-use std::os::unix::fs::PermissionsExt;
 use std::collections::HashMap;
+use std::os::unix::fs::PermissionsExt;
 
 const RESET: &str = "\x1b[0m";
 const RED: &str = "\x1b[31m";
@@ -101,81 +101,86 @@ fn create_icon_hashmap() -> HashMap<String, &'static str> {
     let mut file_icons = HashMap::new();
     file_icons.insert("go".to_string(), " ");
     file_icons.insert("mod".to_string(), " ");
-    file_icons.insert("sh".to_string()," ");
-    file_icons.insert("cpp".to_string()," ");
-    file_icons.insert("hpp".to_string()," ");
-    file_icons.insert("cxx".to_string()," ");
-    file_icons.insert("hxx".to_string()," ");
-    file_icons.insert("css".to_string()," ");
-    file_icons.insert("c".to_string()," ");
-    file_icons.insert("h".to_string()," ");
-    file_icons.insert("cs".to_string(),"󰌛 ");
-    file_icons.insert("png".to_string()," ");
-    file_icons.insert("jpg".to_string()," ");
-    file_icons.insert("JPG".to_string()," ");
-    file_icons.insert("jpeg".to_string()," ");
-    file_icons.insert("webp".to_string()," ");
-    file_icons.insert("xcf".to_string()," ");
-    file_icons.insert("xml".to_string(),"󰗀 ");
-    file_icons.insert("htm".to_string()," ");
-    file_icons.insert("html".to_string()," ");
-    file_icons.insert("txt".to_string()," ");
-    file_icons.insert("mp3".to_string()," ");
-    file_icons.insert("m4a".to_string()," ");
-    file_icons.insert("ogg".to_string()," ");
-    file_icons.insert("flac".to_string()," ");
-    file_icons.insert("mp4".to_string()," ");
-    file_icons.insert("mkv".to_string()," ");
-    file_icons.insert("webm".to_string()," ");
-    file_icons.insert("zip".to_string(),"󰿺 ");
-    file_icons.insert("tar".to_string(),"󰛫 ");
-    file_icons.insert("gz".to_string(),"󰛫 ");
-    file_icons.insert("bz2".to_string(),"󰿺 ");
-    file_icons.insert("xz".to_string(),"󰿺 ");
-    file_icons.insert("jar".to_string()," ");
-    file_icons.insert("java".to_string()," ");
-    file_icons.insert("js".to_string()," ");
-    file_icons.insert("json".to_string()," ");
-    file_icons.insert("py".to_string()," ");
-    file_icons.insert("rs".to_string()," ");
-    file_icons.insert("yml".to_string()," ");
-    file_icons.insert("yaml".to_string()," ");
-    file_icons.insert("toml".to_string()," ");
-    file_icons.insert("deb".to_string()," ");
-    file_icons.insert("md".to_string()," ");
-    file_icons.insert("rb".to_string()," ");
-    file_icons.insert("php".to_string()," ");
-    file_icons.insert("pl".to_string()," ");
-    file_icons.insert("svg".to_string(),"󰜡 ");
-    file_icons.insert("eps".to_string()," ");
-    file_icons.insert("ps".to_string()," ");
-    file_icons.insert("git".to_string()," ");
-    file_icons.insert("zig".to_string()," ");
-    file_icons.insert("xbps".to_string()," ");
-    file_icons.insert("el".to_string()," ");
-    file_icons.insert("vim".to_string()," ");
-    file_icons.insert("lua".to_string()," ");
-    file_icons.insert("pdf".to_string()," ");
-    file_icons.insert("epub".to_string(),"󰂺 ");
-    file_icons.insert("conf".to_string()," ");
-    file_icons.insert("iso".to_string()," ");
-    file_icons.insert("exe".to_string()," ");
-    file_icons.insert("odt".to_string(),"󰷈 ");
-    file_icons.insert("ods".to_string(),"󰱾 ");
-    file_icons.insert("odp".to_string(),"󰈧 ");
-    file_icons.insert("gif".to_string(),"󰵸 ");
-    file_icons.insert("tiff".to_string(),"󰋪 ");
-    file_icons.insert("7z".to_string()," ");
-    file_icons.insert("bat".to_string()," ");
-    file_icons.insert("app".to_string()," ");
-    file_icons.insert("log".to_string()," ");
-    file_icons.insert("sql".to_string()," ");
-    file_icons.insert("db".to_string()," ");
+    file_icons.insert("sh".to_string(), " ");
+    file_icons.insert("cpp".to_string(), " ");
+    file_icons.insert("hpp".to_string(), " ");
+    file_icons.insert("cxx".to_string(), " ");
+    file_icons.insert("hxx".to_string(), " ");
+    file_icons.insert("css".to_string(), " ");
+    file_icons.insert("c".to_string(), " ");
+    file_icons.insert("h".to_string(), " ");
+    file_icons.insert("cs".to_string(), "󰌛 ");
+    file_icons.insert("png".to_string(), " ");
+    file_icons.insert("jpg".to_string(), " ");
+    file_icons.insert("JPG".to_string(), " ");
+    file_icons.insert("jpeg".to_string(), " ");
+    file_icons.insert("webp".to_string(), " ");
+    file_icons.insert("xcf".to_string(), " ");
+    file_icons.insert("xml".to_string(), "󰗀 ");
+    file_icons.insert("htm".to_string(), " ");
+    file_icons.insert("html".to_string(), " ");
+    file_icons.insert("txt".to_string(), " ");
+    file_icons.insert("mp3".to_string(), " ");
+    file_icons.insert("m4a".to_string(), " ");
+    file_icons.insert("ogg".to_string(), " ");
+    file_icons.insert("flac".to_string(), " ");
+    file_icons.insert("mp4".to_string(), " ");
+    file_icons.insert("mkv".to_string(), " ");
+    file_icons.insert("webm".to_string(), " ");
+    file_icons.insert("zip".to_string(), "󰿺 ");
+    file_icons.insert("tar".to_string(), "󰛫 ");
+    file_icons.insert("gz".to_string(), "󰛫 ");
+    file_icons.insert("bz2".to_string(), "󰿺 ");
+    file_icons.insert("xz".to_string(), "󰿺 ");
+    file_icons.insert("jar".to_string(), " ");
+    file_icons.insert("java".to_string(), " ");
+    file_icons.insert("js".to_string(), " ");
+    file_icons.insert("json".to_string(), " ");
+    file_icons.insert("py".to_string(), " ");
+    file_icons.insert("rs".to_string(), " ");
+    file_icons.insert("yml".to_string(), " ");
+    file_icons.insert("yaml".to_string(), " ");
+    file_icons.insert("toml".to_string(), " ");
+    file_icons.insert("deb".to_string(), " ");
+    file_icons.insert("md".to_string(), " ");
+    file_icons.insert("rb".to_string(), " ");
+    file_icons.insert("php".to_string(), " ");
+    file_icons.insert("pl".to_string(), " ");
+    file_icons.insert("svg".to_string(), "󰜡 ");
+    file_icons.insert("eps".to_string(), " ");
+    file_icons.insert("ps".to_string(), " ");
+    file_icons.insert("git".to_string(), " ");
+    file_icons.insert("zig".to_string(), " ");
+    file_icons.insert("xbps".to_string(), " ");
+    file_icons.insert("el".to_string(), " ");
+    file_icons.insert("vim".to_string(), " ");
+    file_icons.insert("lua".to_string(), " ");
+    file_icons.insert("pdf".to_string(), " ");
+    file_icons.insert("epub".to_string(), "󰂺 ");
+    file_icons.insert("conf".to_string(), " ");
+    file_icons.insert("iso".to_string(), " ");
+    file_icons.insert("exe".to_string(), " ");
+    file_icons.insert("odt".to_string(), "󰷈 ");
+    file_icons.insert("ods".to_string(), "󰱾 ");
+    file_icons.insert("odp".to_string(), "󰈧 ");
+    file_icons.insert("gif".to_string(), "󰵸 ");
+    file_icons.insert("tiff".to_string(), "󰋪 ");
+    file_icons.insert("7z".to_string(), " ");
+    file_icons.insert("bat".to_string(), " ");
+    file_icons.insert("app".to_string(), " ");
+    file_icons.insert("log".to_string(), " ");
+    file_icons.insert("sql".to_string(), " ");
+    file_icons.insert("db".to_string(), " ");
 
     file_icons
 }
 
-fn output_to_term(mut files: Vec<String>, force_col: bool, longest_file_name: usize, file_icons: HashMap<String, &str>) {
+fn output_to_term(
+    mut files: Vec<String>,
+    force_col: bool,
+    longest_file_name: usize,
+    file_icons: HashMap<String, &str>,
+) {
     files.sort();
     let ncol = termsize::get().unwrap().cols / (4 + longest_file_name as u16);
 
@@ -189,7 +194,7 @@ fn output_to_term(mut files: Vec<String>, force_col: bool, longest_file_name: us
 
         // printing files
         } else {
-            let split_name = &entry.split('.').collect::<Vec<&str>>();
+            let split_name = &mut entry.split('.').collect::<Vec<&str>>();
             if split_name.len() < 2 || split_name[0] == "" {
                 // handle hidden files/ files that don't have an extension
                 print!("{entry}");
@@ -219,25 +224,29 @@ fn output_to_term(mut files: Vec<String>, force_col: bool, longest_file_name: us
                 match extension {
                     "go" => print!("{CYAN}{icon}{RESET}"),
                     "sh" => print!("{BRIGHTGREEN}{icon}{RESET}"),
-                    "cpp"|"hpp"|"cxx"|"hxx" => print!("{BLUE}{icon}{RESET}"),
+                    "cpp" | "hpp" | "cxx" | "hxx" => print!("{BLUE}{icon}{RESET}"),
                     "css" => print!("{LIGHTBLUE}{icon}{RESET}"),
-                    "c"|"h" => print!("{BLUE}{icon}{RESET}"),
+                    "c" | "h" => print!("{BLUE}{icon}{RESET}"),
                     "cs" => print!("{DARKMAGENTA}{icon}{RESET}"),
-                    "png"|"jpg"|"jpeg"|"JPG"|"webp" => print!("{BRIGHTMAGENTA}{icon}{RESET}"),
+                    "png" | "jpg" | "jpeg" | "JPG" | "webp" => {
+                        print!("{BRIGHTMAGENTA}{icon}{RESET}")
+                    }
                     "gif" => print!("{MAGENTA}{icon}{RESET}"),
                     "xcf" => print!("{PURPLE}{icon}{RESET}"),
                     "xml" => print!("{LIGHTCYAN}{icon}{RESET}"),
-                    "htm"|"html" => print!("{ORANGE}{icon}{RESET}"),
-                    "txt"|"app" => print!("{WHITE}{icon}{RESET}"),
-                    "mp3"|"m4a"|"ogg"|"flac" => print!("{BRIGHTBLUE}{icon}{RESET}"),
-                    "mp4"|"mkv"|"webm" => print!("{BRIGHTMAGENTA}{icon}{RESET}"),
-                    "zip"|"tar"|"gz"|"bz2"|"xz"|"7z" => print!("{LIGHTPURPLE}{icon}{RESET}"),
-                    "jar"|"java" => print!("{ORANGE}{icon}{RESET}"),
+                    "htm" | "html" => print!("{ORANGE}{icon}{RESET}"),
+                    "txt" | "app" => print!("{WHITE}{icon}{RESET}"),
+                    "mp3" | "m4a" | "ogg" | "flac" => print!("{BRIGHTBLUE}{icon}{RESET}"),
+                    "mp4" | "mkv" | "webm" => print!("{BRIGHTMAGENTA}{icon}{RESET}"),
+                    "zip" | "tar" | "gz" | "bz2" | "xz" | "7z" => {
+                        print!("{LIGHTPURPLE}{icon}{RESET}")
+                    }
+                    "jar" | "java" => print!("{ORANGE}{icon}{RESET}"),
                     "js" => print!("{YELLOW}{icon}{RESET}"),
-                    "json"|"tiff" => print!("{BRIGHTYELLOW}{icon}{RESET}"),
+                    "json" | "tiff" => print!("{BRIGHTYELLOW}{icon}{RESET}"),
                     "py" => print!("{DARKYELLOW}{icon}{RESET}"),
                     "rs" => print!("{DARKGRAY}{icon}{RESET}"),
-                    "yml"|"yaml" => print!("{BRIGHTRED}{icon}{RESET}"),
+                    "yml" | "yaml" => print!("{BRIGHTRED}{icon}{RESET}"),
                     "toml" => print!("{DARKORANGE}{icon}{RESET}"),
                     "deb" => print!("{LIGHTRED}{icon}{RESET}"),
                     "md" => print!("{CYAN}{icon}{RESET}"),
@@ -245,20 +254,20 @@ fn output_to_term(mut files: Vec<String>, force_col: bool, longest_file_name: us
                     "php" => print!("{BRIGHTBLUE}{icon}{RESET}"),
                     "pl" => print!("{RED}{icon}{RESET}"),
                     "svg" => print!("{LIGHTPURPLE}{icon}{RESET}"),
-                    "eps"|"ps" => print!("{ORANGE}{icon}{RESET}"),
+                    "eps" | "ps" => print!("{ORANGE}{icon}{RESET}"),
                     "git" => print!("{ORANGE}{icon}{RESET}"),
                     "zig" => print!("{DARKORANGE}{icon}{RESET}"),
                     "xbps" => print!("{DARKGREEN}{icon}{RESET}"),
                     "el" => print!("{PURPLE}{icon}{RESET}"),
                     "vim" => print!("{DARKGREEN}{icon}{RESET}"),
-                    "lua"|"sql" => print!("{BRIGHTBLUE}{icon}{RESET}"),
-                    "pdf"|"db" => print!("{BRIGHTRED}{icon}{RESET}"),
+                    "lua" | "sql" => print!("{BRIGHTBLUE}{icon}{RESET}"),
+                    "pdf" | "db" => print!("{BRIGHTRED}{icon}{RESET}"),
                     "epub" => print!("{CYAN}{icon}{RESET}"),
-                    "conf"|"bat" => print!("{DARKGRAY}{icon}{RESET}"),
+                    "conf" | "bat" => print!("{DARKGRAY}{icon}{RESET}"),
                     "iso" => print!("{GRAY}{icon}{RESET}"),
                     "exe" => print!("{BRIGHTCYAN}{icon}{RESET}"),
                     "log" => print!("{GRAY}{icon}{RESET}"),
-                    _ => skipped = true
+                    _ => skipped = true,
                 }
             } else {
                 print!("  ");
@@ -283,7 +292,12 @@ fn output_to_term(mut files: Vec<String>, force_col: bool, longest_file_name: us
     }
 }
 
-fn run(include_hidden: bool, force_col: bool, file_icons: HashMap<String, &str>, dir: &PathBuf) -> Result<(), Box<dyn Error>> {
+fn run(
+    include_hidden: bool,
+    force_col: bool,
+    file_icons: HashMap<String, &str>,
+    dir: &PathBuf,
+) -> Result<(), Box<dyn Error>> {
     if dir.is_dir() {
         let mut files = Vec::new();
         let mut longest_file_name = 0;
