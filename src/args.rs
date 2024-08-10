@@ -2,7 +2,7 @@ use clap::Parser;
 use std::path::PathBuf;
 
 #[derive(Debug, Parser)]
-#[clap(author, version, about)]
+#[clap(author, version="1.0", about)]
 pub struct RsArgs {
     #[arg(default_value = ".")]
     /// Optional directory to list
