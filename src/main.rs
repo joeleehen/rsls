@@ -315,12 +315,20 @@ fn run(
         let mut files = Vec::new();
         let mut longest_file_name = 0;
 
-        for entry in fs::read_dir(dir)? {
-            let entry = entry?;
+        let mut entries = fs::read_dir(dir)?
+            .map(|res| res.map(|e| e.path()))
+            .collect::<Result<Vec<_>, std::io::Error>>()?;
+
+        entries.sort();
+
+        for entry in entries {
             let mut file_name = entry
-                .file_name()
-                .into_string()
-                .or_else(|f| Err(format!("Invalid entry: {:?}", f)))?;
+                // as by the above iterator file_name will always be valid
+                .file_name().unwrap()
+                // these lines could be optimized however to_string_lossy replaces invalid characters
+                // nicely and i believe this should be faster than handling the error myself
+                .to_string_lossy()
+                .to_string();
             if entry.metadata()?.is_dir() {
                 file_name = file_name + "/";
             }
@@ -345,12 +353,17 @@ fn run(
 
 fn run_long(include_hidden: bool, dir: &PathBuf) -> Result<(), Box<dyn Error>> {
     if dir.is_dir() {
-        for entry in fs::read_dir(dir)? {
-            let entry = entry?;
+        let mut entries = fs::read_dir(dir)?
+            .map(|res| res.map(|e| e.path()))
+            .collect::<Result<Vec<_>, std::io::Error>>()?;
+
+        entries.sort();
+
+        for entry in entries {
+            let entry = entry;
             let file_name = entry
-                .file_name()
-                .into_string()
-                .or_else(|f| Err(format!("Invalid entry: {:?}", f)))?;
+                .file_name().unwrap() // as by above iterator file_name will always be Some
+                .to_string_lossy();
             let metadata = entry.metadata()?;
             let size = metadata.len();
             let modified: DateTime<Local> = DateTime::from(metadata.modified()?);
