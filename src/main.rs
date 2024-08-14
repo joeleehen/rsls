@@ -1,5 +1,7 @@
 mod args;
+mod colors;
 
+use colors::*;
 use args::RsArgs;
 
 extern crate chrono;
@@ -21,33 +23,6 @@ use humansize::{format_size, DECIMAL};
 use libc::{S_IRGRP, S_IROTH, S_IRUSR, S_IWGRP, S_IWOTH, S_IWUSR, S_IXGRP, S_IXOTH, S_IXUSR};
 use std::collections::HashMap;
 use std::os::unix::fs::PermissionsExt;
-
-const RESET: &str = "\x1b[0m";
-const RED: &str = "\x1b[31m";
-const YELLOW: &str = "\x1b[33m";
-const BLUE: &str = "\x1b[34m";
-const MAGENTA: &str = "\x1b[35m";
-const WHITE: &str = "\x1b[97m";
-const CYAN: &str = "\x1b[36m";
-const ORANGE: &str = "\x1b[38;5;208m";
-const PURPLE: &str = "\x1b[35m";
-const GRAY: &str = "\x1b[37m";
-const LIGHTRED: &str = "\x1b[91m";
-const LIGHTBLUE: &str = "\x1b[94m";
-const LIGHTPURPLE: &str = "\x1b[95m";
-const LIGHTCYAN: &str = "\x1b[38;5;87m";
-const DARKGREEN: &str = "\x1b[38;5;22m";
-const DARKORANGE: &str = "\x1b[38;5;208m";
-const DARKYELLOW: &str = "\x1b[38;5;172m";
-const DARKMAGENTA: &str = "\x1b[38;5;125m";
-const DARKGRAY: &str = "\x1b[90m";
-const BRIGHTRED: &str = "\x1b[38;5;196m";
-const BRIGHTGREEN: &str = "\x1b[38;5;46m";
-const BRIGHTYELLOW: &str = "\x1b[38;5;226m";
-const BRIGHTBLUE: &str = "\x1b[38;5;39m";
-const BRIGHTMAGENTA: &str = "\x1b[38;5;198m";
-const BRIGHTCYAN: &str = "\x1b[38;5;51m";
-const LIGHTGREEN: &str = "\x1b[92m";
 
 fn parse_permissions(mode: u32) -> String {
     let user = triplet(mode, S_IRUSR as u32, S_IWUSR as u32, S_IXUSR as u32);
