@@ -369,7 +369,7 @@ fn run_long(include_hidden: bool, dir: &PathBuf) -> Result<(), Box<dyn Error>> {
             let modified: DateTime<Local> = DateTime::from(metadata.modified()?);
             let mode = metadata.permissions().mode();
 
-            if include_hidden == false {
+            if !include_hidden {
                 // skip hidden files
                 if file_name.chars().nth(0) != Some('.') {
                     println!(
