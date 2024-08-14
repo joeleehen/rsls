@@ -385,17 +385,18 @@ fn run_long(include_hidden: bool, dir: &PathBuf) -> Result<(), Box<dyn Error>> {
                 }
             } else {
                 // include hidden files
-                println!(
-                    "{} {:>5} {} {}",
-                    if entry.metadata()?.is_dir() {
-                        "d".to_string() + &parse_permissions(mode as u32)
-                    } else {
-                        "-".to_string() + &parse_permissions(mode as u32)
-                    },
-                    format_size(size, DECIMAL),
-                    modified.format("%_d %b %H:%M").to_string(),
-                    file_name
-                );
+                files.push(LongEntry {
+                    permissions:
+                        {if entry.metadata()?.is_dir() {
+                            "d".to_string() + &parse_permissions(mode as u32)
+                        } else {
+                            "-".to_string() + &parse_permissions(mode as u32)
+                        }},
+                    size: format_size(size, DECIMAL),
+                    date_modified: modified.format("%_d %b %H:%M").to_string(),
+                    name: file_name,
+                
+                });
             }
         }
 
