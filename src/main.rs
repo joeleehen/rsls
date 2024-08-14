@@ -24,6 +24,24 @@ use libc::{S_IRGRP, S_IROTH, S_IRUSR, S_IWGRP, S_IWOTH, S_IWUSR, S_IXGRP, S_IXOT
 use std::collections::HashMap;
 use std::os::unix::fs::PermissionsExt;
 
+#[derive(Debug, Clone)]
+/// A struct holding a single Line for printing the long format
+struct LongEntry {
+    permissions: String,
+    size: String,
+    date_modified: String,
+    name: String,
+}
+
+impl LongEntry {
+    pub fn to_string(&self) -> String {
+        format!(
+            "{} {} {} {}",
+            self.permissions, self.size, self.date_modified, self.name
+        )
+    }
+}
+
 fn parse_permissions(mode: u32) -> String {
     let user = triplet(mode, S_IRUSR as u32, S_IWUSR as u32, S_IXUSR as u32);
     let group = triplet(mode, S_IRGRP as u32, S_IWGRP as u32, S_IXGRP as u32);
@@ -334,11 +352,17 @@ fn run_long(include_hidden: bool, dir: &PathBuf) -> Result<(), Box<dyn Error>> {
 
         entries.sort();
 
+        let mut files: Vec<LongEntry> = Vec::new();
+
         for entry in entries {
             let entry = entry;
             let file_name = entry
-                .file_name().unwrap() // as by above iterator file_name will always be Some
-                .to_string_lossy();
+                // as by the above iterator file_name will always be valid
+                .file_name().unwrap()
+                // these lines could be optimized however to_string_lossy replaces invalid characters
+                // nicely and i believe this should be faster than handling the error myself
+                .to_string_lossy()
+                .to_string();
             let metadata = entry.metadata()?;
             let size = metadata.len();
             let modified: DateTime<Local> = DateTime::from(metadata.modified()?);
@@ -347,17 +371,17 @@ fn run_long(include_hidden: bool, dir: &PathBuf) -> Result<(), Box<dyn Error>> {
             if !include_hidden {
                 // skip hidden files
                 if file_name.chars().nth(0) != Some('.') {
-                    println!(
-                        "{} {:>5} {} {}",
-                        if entry.metadata()?.is_dir() {
-                            "d".to_string() + &parse_permissions(mode as u32)
-                        } else {
-                            "-".to_string() + &parse_permissions(mode as u32)
-                        },
-                        format_size(size, DECIMAL),
-                        modified.format("%_d %b %H:%M").to_string(),
-                        file_name
-                    );
+                    files.push(LongEntry {
+                        permissions:
+                            {if entry.metadata()?.is_dir() {
+                                "d".to_string() + &parse_permissions(mode as u32)
+                            } else {
+                                "-".to_string() + &parse_permissions(mode as u32)
+                            }},
+                        size: format_size(size, DECIMAL),
+                        date_modified: modified.format("%_d %b %H:%M").to_string(),
+                        name: file_name,
+                });
                 }
             } else {
                 // include hidden files
@@ -374,6 +398,17 @@ fn run_long(include_hidden: bool, dir: &PathBuf) -> Result<(), Box<dyn Error>> {
                 );
             }
         }
+
+        let size_longest = files.iter().map(|file| file.size.len()).max().unwrap_or(0);
+        let date_longest = files.iter().map(|file| file.date_modified.len()).max().unwrap_or(0);
+
+        for file in files.iter_mut() {
+            file.size.insert_str(0, &" ".repeat(size_longest - file.size.len()));
+            file.date_modified.insert_str(0, &" ".repeat(date_longest - file.date_modified.len()));
+        }
+
+        let output = files.iter().map(|entry| entry.to_string() + "\n").collect::<String>();
+        print!("{}", output);
     }
     Ok(())
 }
