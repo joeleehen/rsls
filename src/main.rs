@@ -1,5 +1,7 @@
 mod args;
+mod colors;
 
+use colors::*;
 use args::RsArgs;
 
 extern crate chrono;
@@ -22,32 +24,23 @@ use libc::{S_IRGRP, S_IROTH, S_IRUSR, S_IWGRP, S_IWOTH, S_IWUSR, S_IXGRP, S_IXOT
 use std::collections::HashMap;
 use std::os::unix::fs::PermissionsExt;
 
-const RESET: &str = "\x1b[0m";
-const RED: &str = "\x1b[31m";
-const YELLOW: &str = "\x1b[33m";
-const BLUE: &str = "\x1b[34m";
-const MAGENTA: &str = "\x1b[35m";
-const WHITE: &str = "\x1b[97m";
-const CYAN: &str = "\x1b[36m";
-const ORANGE: &str = "\x1b[38;5;208m";
-const PURPLE: &str = "\x1b[35m";
-const GRAY: &str = "\x1b[37m";
-const LIGHTRED: &str = "\x1b[91m";
-const LIGHTBLUE: &str = "\x1b[94m";
-const LIGHTPURPLE: &str = "\x1b[95m";
-const LIGHTCYAN: &str = "\x1b[38;5;87m";
-const DARKGREEN: &str = "\x1b[38;5;22m";
-const DARKORANGE: &str = "\x1b[38;5;208m";
-const DARKYELLOW: &str = "\x1b[38;5;172m";
-const DARKMAGENTA: &str = "\x1b[38;5;125m";
-const DARKGRAY: &str = "\x1b[90m";
-const BRIGHTRED: &str = "\x1b[38;5;196m";
-const BRIGHTGREEN: &str = "\x1b[38;5;46m";
-const BRIGHTYELLOW: &str = "\x1b[38;5;226m";
-const BRIGHTBLUE: &str = "\x1b[38;5;39m";
-const BRIGHTMAGENTA: &str = "\x1b[38;5;198m";
-const BRIGHTCYAN: &str = "\x1b[38;5;51m";
-const LIGHTGREEN: &str = "\x1b[92m";
+#[derive(Debug, Clone)]
+/// A struct holding a single Line for printing the long format
+struct LongEntry {
+    permissions: String,
+    size: String,
+    date_modified: String,
+    name: String,
+}
+
+impl LongEntry {
+    pub fn to_string(&self) -> String {
+        format!(
+            "{} {} {} {}",
+            self.permissions, self.size, self.date_modified, self.name
+        )
+    }
+}
 
 fn parse_permissions(mode: u32) -> String {
     let user = triplet(mode, S_IRUSR as u32, S_IWUSR as u32, S_IXUSR as u32);
@@ -315,12 +308,20 @@ fn run(
         let mut files = Vec::new();
         let mut longest_file_name = 0;
 
-        for entry in fs::read_dir(dir)? {
-            let entry = entry?;
+        let mut entries = fs::read_dir(dir)?
+            .map(|res| res.map(|e| e.path()))
+            .collect::<Result<Vec<_>, std::io::Error>>()?;
+
+        entries.sort();
+
+        for entry in entries {
             let mut file_name = entry
-                .file_name()
-                .into_string()
-                .or_else(|f| Err(format!("Invalid entry: {:?}", f)))?;
+                // as by the above iterator file_name will always be valid
+                .file_name().unwrap()
+                // these lines could be optimized however to_string_lossy replaces invalid characters
+                // nicely and i believe this should be faster than handling the error myself
+                .to_string_lossy()
+                .to_string();
             if entry.metadata()?.is_dir() {
                 file_name = file_name + "/";
             }
@@ -345,47 +346,70 @@ fn run(
 
 fn run_long(include_hidden: bool, dir: &PathBuf) -> Result<(), Box<dyn Error>> {
     if dir.is_dir() {
-        for entry in fs::read_dir(dir)? {
-            let entry = entry?;
+        let mut entries = fs::read_dir(dir)?
+            .map(|res| res.map(|e| e.path()))
+            .collect::<Result<Vec<_>, std::io::Error>>()?;
+
+        entries.sort();
+
+        let mut files: Vec<LongEntry> = Vec::new();
+
+        for entry in entries {
+            let entry = entry;
             let file_name = entry
-                .file_name()
-                .into_string()
-                .or_else(|f| Err(format!("Invalid entry: {:?}", f)))?;
+                // as by the above iterator file_name will always be valid
+                .file_name().unwrap()
+                // these lines could be optimized however to_string_lossy replaces invalid characters
+                // nicely and i believe this should be faster than handling the error myself
+                .to_string_lossy()
+                .to_string();
             let metadata = entry.metadata()?;
             let size = metadata.len();
             let modified: DateTime<Local> = DateTime::from(metadata.modified()?);
             let mode = metadata.permissions().mode();
 
-            if include_hidden == false {
+            if !include_hidden {
                 // skip hidden files
                 if file_name.chars().nth(0) != Some('.') {
-                    println!(
-                        "{} {:>5} {} {}",
-                        if entry.metadata()?.is_dir() {
-                            "d".to_string() + &parse_permissions(mode as u32)
-                        } else {
-                            "-".to_string() + &parse_permissions(mode as u32)
-                        },
-                        format_size(size, DECIMAL),
-                        modified.format("%_d %b %H:%M").to_string(),
-                        file_name
-                    );
+                    files.push(LongEntry {
+                        permissions:
+                            {if entry.metadata()?.is_dir() {
+                                "d".to_string() + &parse_permissions(mode as u32)
+                            } else {
+                                "-".to_string() + &parse_permissions(mode as u32)
+                            }},
+                        size: format_size(size, DECIMAL),
+                        date_modified: modified.format("%_d %b %H:%M").to_string(),
+                        name: file_name,
+                });
                 }
             } else {
                 // include hidden files
-                println!(
-                    "{} {:>5} {} {}",
-                    if entry.metadata()?.is_dir() {
-                        "d".to_string() + &parse_permissions(mode as u32)
-                    } else {
-                        "-".to_string() + &parse_permissions(mode as u32)
-                    },
-                    format_size(size, DECIMAL),
-                    modified.format("%_d %b %H:%M").to_string(),
-                    file_name
-                );
+                files.push(LongEntry {
+                    permissions:
+                        {if entry.metadata()?.is_dir() {
+                            "d".to_string() + &parse_permissions(mode as u32)
+                        } else {
+                            "-".to_string() + &parse_permissions(mode as u32)
+                        }},
+                    size: format_size(size, DECIMAL),
+                    date_modified: modified.format("%_d %b %H:%M").to_string(),
+                    name: file_name,
+                
+                });
             }
         }
+
+        let size_longest = files.iter().map(|file| file.size.len()).max().unwrap_or(0);
+        let date_longest = files.iter().map(|file| file.date_modified.len()).max().unwrap_or(0);
+
+        for file in files.iter_mut() {
+            file.size.insert_str(0, &" ".repeat(size_longest - file.size.len()));
+            file.date_modified.insert_str(0, &" ".repeat(date_longest - file.date_modified.len()));
+        }
+
+        let output = files.iter().map(|entry| entry.to_string() + "\n").collect::<String>();
+        print!("{}", output);
     }
     Ok(())
 }
