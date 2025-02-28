@@ -187,9 +187,14 @@ fn output_to_term(
     let mut n = 0;
     for entry in files {
         let split_name = &entry.split('/').collect::<Vec<&str>>();
+        let last_char = &entry.chars().last().unwrap();
 
+        // printing symlinks
+        if last_char == &'@' {
+            print!("{PURPLE}{entry}  {RESET}");
+        }
         // printing directories
-        if split_name.len() == 2 && split_name[1] == "" {
+        else if split_name.len() == 2 && split_name[1] == "" {
             print!("{BLUE}{entry} {RESET}");
 
         // printing files
@@ -324,6 +329,9 @@ fn run(
                 .to_string();
             if entry.symlink_metadata()?.is_dir() {
                 file_name = file_name + "/";
+            }
+            if entry.is_symlink() {
+                file_name = file_name + "@";
             }
             if !include_hidden {
                 // skip hidden files
