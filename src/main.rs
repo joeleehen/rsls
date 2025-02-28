@@ -185,11 +185,17 @@ fn output_to_term(
     let ncol = termsize::get().unwrap().cols / (4 + longest_file_name as u16);
 
     let mut n = 0;
-    for entry in files {
+    for mut entry in files {
         let split_name = &entry.split('/').collect::<Vec<&str>>();
+        let last_char = &entry.chars().last().unwrap();
 
+        // printing symlinks
+        if last_char == &'@' {
+            entry.pop();
+            print!("{PURPLE}{entry} {RESET}");
+        }
         // printing directories
-        if split_name.len() == 2 && split_name[1] == "" {
+        else if split_name.len() == 2 && split_name[1] == "" {
             print!("{BLUE}{entry} {RESET}");
 
         // printing files
@@ -322,8 +328,11 @@ fn run(
                 // nicely and i believe this should be faster than handling the error myself
                 .to_string_lossy()
                 .to_string();
-            if entry.metadata()?.is_dir() {
+            if entry.symlink_metadata()?.is_dir() {
                 file_name = file_name + "/";
+            }
+            if entry.is_symlink() {
+                file_name = file_name + "@";
             }
             if !include_hidden {
                 // skip hidden files
@@ -363,7 +372,7 @@ fn run_long(include_hidden: bool, dir: &PathBuf) -> Result<(), Box<dyn Error>> {
                 // nicely and i believe this should be faster than handling the error myself
                 .to_string_lossy()
                 .to_string();
-            let metadata = entry.metadata()?;
+            let metadata = entry.symlink_metadata()?;
             let size = metadata.len();
             let modified: DateTime<Local> = DateTime::from(metadata.modified()?);
             let mode = metadata.permissions().mode();
