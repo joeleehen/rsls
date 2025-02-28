@@ -185,13 +185,14 @@ fn output_to_term(
     let ncol = termsize::get().unwrap().cols / (4 + longest_file_name as u16);
 
     let mut n = 0;
-    for entry in files {
+    for mut entry in files {
         let split_name = &entry.split('/').collect::<Vec<&str>>();
         let last_char = &entry.chars().last().unwrap();
 
         // printing symlinks
         if last_char == &'@' {
-            print!("{PURPLE}{entry}  {RESET}");
+            entry.pop();
+            print!("{PURPLE}{entry} {RESET}");
         }
         // printing directories
         else if split_name.len() == 2 && split_name[1] == "" {
