@@ -14,6 +14,7 @@ use std::error::Error;
 use std::fs;
 use std::path::PathBuf;
 use std::process;
+use std::io::IsTerminal;
 
 use clap::Parser;
 
@@ -175,6 +176,12 @@ fn create_icon_hashmap() -> HashMap<String, &'static str> {
     file_icons
 }
 
+fn get_ncols(&longest_file_name: &usize) -> Option<u16> {
+    let term_dimensions = termsize::get();
+    let ncol = term_dimensions?.cols / (4 + longest_file_name as u16);
+    Some(ncol)
+}
+
 fn output_to_term(
     mut files: Vec<String>,
     force_col: bool,
@@ -182,123 +189,131 @@ fn output_to_term(
     file_icons: HashMap<String, &str>,
 ) {
     files.sort();
-    let ncol = termsize::get().unwrap().cols / (4 + longest_file_name as u16);
 
-    let mut n = 0;
-    for mut entry in files {
-        let split_name = &entry.split('/').collect::<Vec<&str>>();
-        let last_char = &entry.chars().last().unwrap();
-
-        // printing symlinks
-        if last_char == &'@' {
-            entry.pop();
-            print!("{PURPLE}{entry} {RESET}");
+    // if output is piped, print using oneline without icons
+    if !std::io::stdout().is_terminal() {
+        for file in &files {
+            println!("{}", file);
         }
-        // printing directories
-        else if split_name.len() == 2 && split_name[1] == "" {
-            print!("{BLUE}{entry} {RESET}");
+    } else {
+        let ncol = get_ncols(&longest_file_name).expect("Expected Some(u16) for terminal size");
 
-        // printing files
-        } else {
-            let split_name = &mut entry.split('.').collect::<Vec<&str>>();
-            if split_name.len() < 2 || split_name[0] == "" {
-                // handle hidden files/ files that don't have an extension
-                print!("{entry}");
-                if force_col {
-                    println!("");
-                } else {
-                    n += 1;
-                    if n as u16 >= ncol || entry.len() > longest_file_name {
-                        println!();
-                        n = 0;
+        let mut n = 0;
+        for mut entry in files {
+            let split_name = &entry.split('/').collect::<Vec<&str>>();
+            let last_char = &entry.chars().last().unwrap();
+
+            // printing symlinks
+            if last_char == &'@' {
+                entry.pop();
+                print!("{PURPLE}{entry} {RESET}");
+            }
+            // printing directories
+            else if split_name.len() == 2 && split_name[1] == "" {
+                print!("{BLUE}{entry} {RESET}");
+
+            // printing files
+            } else {
+                let split_name = &mut entry.split('.').collect::<Vec<&str>>();
+                if split_name.len() < 2 || split_name[0] == "" {
+                    // handle hidden files/ files that don't have an extension
+                    print!("{entry}");
+                    if force_col {
+                        println!("");
                     } else {
-                        let padding = " ".repeat(6 + longest_file_name - entry.len());
-                        print!("{padding}");
+                        n += 1;
+                        if n as u16 >= ncol || entry.len() > longest_file_name {
+                            println!();
+                            n = 0;
+                        } else {
+                            let padding = " ".repeat(6 + longest_file_name - entry.len());
+                            print!("{padding}");
+                        }
                     }
+                    continue;
                 }
-                continue;
-            }
 
-            //let extension = split_name.reverse()[0];
-            split_name.reverse();
-            let extension = split_name[0];
+                //let extension = split_name.reverse()[0];
+                split_name.reverse();
+                let extension = split_name[0];
 
-            let mut skipped = false;
-            let icon = file_icons.get(extension);
-            if icon.is_some() {
-                let icon = icon.unwrap().to_string();
-                match extension {
-                    "go" => print!("{CYAN}{icon}{RESET}"),
-                    "sh" => print!("{BRIGHTGREEN}{icon}{RESET}"),
-                    "cpp" | "hpp" | "cxx" | "hxx" => print!("{BLUE}{icon}{RESET}"),
-                    "css" => print!("{LIGHTBLUE}{icon}{RESET}"),
-                    "c" | "h" => print!("{BLUE}{icon}{RESET}"),
-                    "cs" => print!("{DARKMAGENTA}{icon}{RESET}"),
-                    "png" | "jpg" | "jpeg" | "JPG" | "webp" => {
-                        print!("{BRIGHTMAGENTA}{icon}{RESET}")
+                let mut skipped = false;
+                let icon = file_icons.get(extension);
+                if icon.is_some() {
+                    let icon = icon.unwrap().to_string();
+                    match extension {
+                        "go" => print!("{CYAN}{icon}{RESET}"),
+                        "sh" => print!("{BRIGHTGREEN}{icon}{RESET}"),
+                        "cpp" | "hpp" | "cxx" | "hxx" => print!("{BLUE}{icon}{RESET}"),
+                        "css" => print!("{LIGHTBLUE}{icon}{RESET}"),
+                        "c" | "h" => print!("{BLUE}{icon}{RESET}"),
+                        "cs" => print!("{DARKMAGENTA}{icon}{RESET}"),
+                        "png" | "jpg" | "jpeg" | "JPG" | "webp" => {
+                            print!("{BRIGHTMAGENTA}{icon}{RESET}")
+                        }
+                        "gif" => print!("{MAGENTA}{icon}{RESET}"),
+                        "xcf" => print!("{PURPLE}{icon}{RESET}"),
+                        "xml" => print!("{LIGHTCYAN}{icon}{RESET}"),
+                        "htm" | "html" => print!("{ORANGE}{icon}{RESET}"),
+                        "txt" | "app" => print!("{WHITE}{icon}{RESET}"),
+                        "mp3" | "m4a" | "ogg" | "flac" => print!("{BRIGHTBLUE}{icon}{RESET}"),
+                        "mp4" | "mkv" | "webm" => print!("{BRIGHTMAGENTA}{icon}{RESET}"),
+                        "zip" | "tar" | "gz" | "bz2" | "xz" | "7z" => {
+                            print!("{LIGHTPURPLE}{icon}{RESET}")
+                        }
+                        "jar" | "java" => print!("{ORANGE}{icon}{RESET}"),
+                        "js" => print!("{YELLOW}{icon}{RESET}"),
+                        "json" | "tiff" => print!("{BRIGHTYELLOW}{icon}{RESET}"),
+                        "py" => print!("{DARKYELLOW}{icon}{RESET}"),
+                        "rs" => print!("{DARKGRAY}{icon}{RESET}"),
+                        "yml" | "yaml" => print!("{BRIGHTRED}{icon}{RESET}"),
+                        "toml" => print!("{DARKORANGE}{icon}{RESET}"),
+                        "deb" => print!("{LIGHTRED}{icon}{RESET}"),
+                        "md" => print!("{CYAN}{icon}{RESET}"),
+                        "rb" => print!("{RED}{icon}{RESET}"),
+                        "php" => print!("{BRIGHTBLUE}{icon}{RESET}"),
+                        "pl" => print!("{RED}{icon}{RESET}"),
+                        "svg" => print!("{LIGHTPURPLE}{icon}{RESET}"),
+                        "eps" | "ps" => print!("{ORANGE}{icon}{RESET}"),
+                        "git" => print!("{ORANGE}{icon}{RESET}"),
+                        "zig" => print!("{DARKORANGE}{icon}{RESET}"),
+                        "xbps" => print!("{DARKGREEN}{icon}{RESET}"),
+                        "el" => print!("{PURPLE}{icon}{RESET}"),
+                        "vim" => print!("{DARKGREEN}{icon}{RESET}"),
+                        "lua" | "sql" => print!("{BRIGHTBLUE}{icon}{RESET}"),
+                        "pdf" | "db" => print!("{BRIGHTRED}{icon}{RESET}"),
+                        "epub" => print!("{CYAN}{icon}{RESET}"),
+                        "conf" | "bat" => print!("{DARKGRAY}{icon}{RESET}"),
+                        "iso" => print!("{GRAY}{icon}{RESET}"),
+                        "exe" => print!("{BRIGHTCYAN}{icon}{RESET}"),
+                        "log" => print!("{GRAY}{icon}{RESET}"),
+                        "csv" => print!("{CYAN}{icon}{RESET}"),
+                        "R" => print!("{BLUE}{icon}{RESET}"),
+                        "doc" | "docx" => print!("{LIGHTCYAN}{icon}{RESET}"),
+                        "ipynb" => print!("{YELLOW}{icon}{RESET}"),
+                        "xls" | "xlsx" => print!("{LIGHTGREEN}{icon}{RESET}"),
+                        _ => skipped = true,
                     }
-                    "gif" => print!("{MAGENTA}{icon}{RESET}"),
-                    "xcf" => print!("{PURPLE}{icon}{RESET}"),
-                    "xml" => print!("{LIGHTCYAN}{icon}{RESET}"),
-                    "htm" | "html" => print!("{ORANGE}{icon}{RESET}"),
-                    "txt" | "app" => print!("{WHITE}{icon}{RESET}"),
-                    "mp3" | "m4a" | "ogg" | "flac" => print!("{BRIGHTBLUE}{icon}{RESET}"),
-                    "mp4" | "mkv" | "webm" => print!("{BRIGHTMAGENTA}{icon}{RESET}"),
-                    "zip" | "tar" | "gz" | "bz2" | "xz" | "7z" => {
-                        print!("{LIGHTPURPLE}{icon}{RESET}")
-                    }
-                    "jar" | "java" => print!("{ORANGE}{icon}{RESET}"),
-                    "js" => print!("{YELLOW}{icon}{RESET}"),
-                    "json" | "tiff" => print!("{BRIGHTYELLOW}{icon}{RESET}"),
-                    "py" => print!("{DARKYELLOW}{icon}{RESET}"),
-                    "rs" => print!("{DARKGRAY}{icon}{RESET}"),
-                    "yml" | "yaml" => print!("{BRIGHTRED}{icon}{RESET}"),
-                    "toml" => print!("{DARKORANGE}{icon}{RESET}"),
-                    "deb" => print!("{LIGHTRED}{icon}{RESET}"),
-                    "md" => print!("{CYAN}{icon}{RESET}"),
-                    "rb" => print!("{RED}{icon}{RESET}"),
-                    "php" => print!("{BRIGHTBLUE}{icon}{RESET}"),
-                    "pl" => print!("{RED}{icon}{RESET}"),
-                    "svg" => print!("{LIGHTPURPLE}{icon}{RESET}"),
-                    "eps" | "ps" => print!("{ORANGE}{icon}{RESET}"),
-                    "git" => print!("{ORANGE}{icon}{RESET}"),
-                    "zig" => print!("{DARKORANGE}{icon}{RESET}"),
-                    "xbps" => print!("{DARKGREEN}{icon}{RESET}"),
-                    "el" => print!("{PURPLE}{icon}{RESET}"),
-                    "vim" => print!("{DARKGREEN}{icon}{RESET}"),
-                    "lua" | "sql" => print!("{BRIGHTBLUE}{icon}{RESET}"),
-                    "pdf" | "db" => print!("{BRIGHTRED}{icon}{RESET}"),
-                    "epub" => print!("{CYAN}{icon}{RESET}"),
-                    "conf" | "bat" => print!("{DARKGRAY}{icon}{RESET}"),
-                    "iso" => print!("{GRAY}{icon}{RESET}"),
-                    "exe" => print!("{BRIGHTCYAN}{icon}{RESET}"),
-                    "log" => print!("{GRAY}{icon}{RESET}"),
-                    "csv" => print!("{CYAN}{icon}{RESET}"),
-                    "R" => print!("{BLUE}{icon}{RESET}"),
-                    "doc" | "docx" => print!("{LIGHTCYAN}{icon}{RESET}"),
-                    "ipynb" => print!("{YELLOW}{icon}{RESET}"),
-                    "xls" | "xlsx" => print!("{LIGHTGREEN}{icon}{RESET}"),
-                    _ => skipped = true,
+                } else {
+                    //print!("  ");
+                    skipped = true;
                 }
-            } else {
-                //print!("  ");
-                skipped = true;
+                print!("{entry}");
+                if skipped {
+                    print!("  ");
+                }
             }
-            print!("{entry}");
-            if skipped {
-                print!("  ");
-            }
-        }
-        if force_col {
-            println!();
-        } else {
-            n += 1;
-            if n as u16 >= ncol || entry.len() > longest_file_name {
+            if force_col {
                 println!();
-                n = 0;
             } else {
-                let padding = " ".repeat(4 + longest_file_name - entry.len());
-                print!("{padding}");
+                n += 1;
+                if n as u16 >= ncol || entry.len() > longest_file_name {
+                    println!();
+                    n = 0;
+                } else {
+                    let padding = " ".repeat(4 + longest_file_name - entry.len());
+                    print!("{padding}");
+                }
             }
         }
     }
