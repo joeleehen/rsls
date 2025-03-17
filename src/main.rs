@@ -182,6 +182,9 @@ fn output_to_term(
     file_icons: HashMap<String, &str>,
 ) {
     files.sort();
+    // when piping output we panic at this line
+    // called 'Option::unwrap()' on a 'None' value
+    // FIXME: check if termsize::get() is None before unwrapping
     let ncol = termsize::get().unwrap().cols / (4 + longest_file_name as u16);
 
     let mut n = 0;
