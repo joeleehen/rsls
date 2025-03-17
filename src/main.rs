@@ -175,7 +175,7 @@ fn create_icon_hashmap() -> HashMap<String, &'static str> {
     file_icons
 }
 
-fn get_ncols(longest_file_name: usize) -> Option<u16> {
+fn get_ncols(&longest_file_name: &usize) -> Option<u16> {
     let term_dimensions = termsize::get();
     let ncol = term_dimensions?.cols / (4 + longest_file_name as u16);
     Some(ncol)
@@ -191,7 +191,8 @@ fn output_to_term(
     // when piping output we panic at this line
     // called 'Option::unwrap()' on a 'None' value
     // FIXME: check if termsize::get() is None before unwrapping
-    let ncol = termsize::get().unwrap().cols / (4 + longest_file_name as u16);
+    //let ncol = termsize::get().unwrap().cols / (4 + longest_file_name as u16);
+    let ncol = get_ncols(&longest_file_name).expect("HOW ARE YOU INVOKING THIS WITHOUT A TERMINAL");
 
     let mut n = 0;
     for mut entry in files {
