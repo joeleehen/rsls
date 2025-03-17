@@ -175,6 +175,12 @@ fn create_icon_hashmap() -> HashMap<String, &'static str> {
     file_icons
 }
 
+fn get_ncols(longest_file_name: usize) -> Option<u16> {
+    let term_dimensions = termsize::get();
+    let ncol = term_dimensions?.cols / (4 + longest_file_name as u16);
+    Some(ncol)
+}
+
 fn output_to_term(
     mut files: Vec<String>,
     force_col: bool,
