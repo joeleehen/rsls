@@ -172,6 +172,10 @@ fn create_icon_hashmap() -> HashMap<String, &'static str> {
     file_icons.insert("ipynb".to_string(), " ");
     file_icons.insert("xls".to_string(), "󰱾 ");
     file_icons.insert("xlsx".to_string(), "󰱾 ");
+    file_icons.insert("jsx".to_string(), " ");
+    file_icons.insert("tsx".to_string(), " ");
+    file_icons.insert("ts".to_string(), " ");
+    file_icons.insert("out".to_string(), " ");
 
     file_icons
 }
@@ -243,6 +247,7 @@ fn output_to_term(
                     let icon = icon.unwrap().to_string();
                     match extension {
                         "go" => print!("{CYAN}{icon}{RESET}"),
+                        "mod" => print!("{CYAN}{icon}{RESET}"),
                         "sh" => print!("{BRIGHTGREEN}{icon}{RESET}"),
                         "cpp" | "hpp" | "cxx" | "hxx" => print!("{BLUE}{icon}{RESET}"),
                         "css" => print!("{LIGHTBLUE}{icon}{RESET}"),
@@ -262,7 +267,9 @@ fn output_to_term(
                             print!("{LIGHTPURPLE}{icon}{RESET}")
                         }
                         "jar" | "java" => print!("{ORANGE}{icon}{RESET}"),
+                        "jsx" | "tsx" => print!("{BLUE}{icon}{RESET}"),
                         "js" => print!("{YELLOW}{icon}{RESET}"),
+                        "ts" => print!("{BLUE}{icon}{RESET}"),
                         "json" | "tiff" => print!("{BRIGHTYELLOW}{icon}{RESET}"),
                         "py" => print!("{DARKYELLOW}{icon}{RESET}"),
                         "rs" => print!("{DARKGRAY}{icon}{RESET}"),
@@ -285,10 +292,11 @@ fn output_to_term(
                         "epub" => print!("{CYAN}{icon}{RESET}"),
                         "conf" | "bat" => print!("{DARKGRAY}{icon}{RESET}"),
                         "iso" => print!("{GRAY}{icon}{RESET}"),
+                        "out" => print!("{GRAY}{icon}{RESET}"),
                         "exe" => print!("{BRIGHTCYAN}{icon}{RESET}"),
                         "log" => print!("{GRAY}{icon}{RESET}"),
                         "csv" => print!("{CYAN}{icon}{RESET}"),
-                        "R" => print!("{BLUE}{icon}{RESET}"),
+                        "R" | "r" => print!("{BLUE}{icon}{RESET}"),
                         "doc" | "docx" => print!("{LIGHTCYAN}{icon}{RESET}"),
                         "ipynb" => print!("{YELLOW}{icon}{RESET}"),
                         "xls" | "xlsx" => print!("{LIGHTGREEN}{icon}{RESET}"),
